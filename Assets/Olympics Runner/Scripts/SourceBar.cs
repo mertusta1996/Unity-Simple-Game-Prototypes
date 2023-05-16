@@ -26,7 +26,6 @@ namespace MertUsta.OlympicsRunner
         private void Start()
         {
             currentSource = minSource;
-            
             sourceBar.minValue = minSource;
             sourceBar.maxValue = maxSource;
             sourceBar.value = minSource;
@@ -36,7 +35,6 @@ namespace MertUsta.OlympicsRunner
         {
             HandleInput();
         }
-
 
         private void HandleInput()
         {
@@ -48,6 +46,7 @@ namespace MertUsta.OlympicsRunner
 
         private void UseSource(float amount)
         {
+            // Tempo and Source usage mechanisms.
             if (!(currentSource + amount <= maxSource)) return;
             
             currentSource += amount;

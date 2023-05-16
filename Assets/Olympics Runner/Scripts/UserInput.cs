@@ -23,14 +23,14 @@ namespace MertUsta.OlympicsRunner
         [Header("Tempo UI Texts")] 
         public TextMeshProUGUI tempoText;
         
-
-        public void Update()
+        private void Update()
         {
             CheckBarStatus();
         }
 
         private void CheckBarStatus()
         {
+            // UI changes when user input changes.
             if (sourceBar.value <= maxTempoColorLimit && sourceBar.value >= overForceColorLimit)
             {
                 fillImage.color = overForceColor;

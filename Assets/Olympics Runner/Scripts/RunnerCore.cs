@@ -1,3 +1,4 @@
+using System;
 using UnityEngine;
 using UnityEngine.UI;
 using TMPro;
@@ -16,6 +17,7 @@ namespace MertUsta.OlympicsRunner
 
         [Header("Runner Values")] 
         public float minRunningSpeed = 3f;
+        public float maxRunningSpeed = 24f;
         
         [Header("Runner Values Curves")] 
         public AnimationCurve initialSpeedValuesCurve;
@@ -33,36 +35,46 @@ namespace MertUsta.OlympicsRunner
         private void RunnerLogic(float sValue)
         {
             var velocity = rigidbodyAthlete.velocity;
+            var sValueOnCurve = sValue / 100f;
+            
+            // Shows the speed value in UI.
             speedText.text = velocity.magnitude.ToString("F1") + "km/h";
 
-            var sValueOnCurve = sValue / 100f;
-            SetAnimatorBoolStatus(sValueOnCurve > 0.05f || velocity.z > minRunningSpeed);
-            SetRigidbodySpeed(maxSpeedValues.Evaluate(sValueOnCurve));
-
-            if (sValueOnCurve > 0.05f || rigidbodyAthlete.velocity.z > minRunningSpeed)
+            if (sValue > 0)
             {
-                SetAnimatorSpeed(initialSpeedValuesCurve.Evaluate(sValueOnCurve), sValue, dividerPerValuesCurve.Evaluate(sValueOnCurve));
+                // Sets Rigidbody speed with input.
+                SetRigidbodySpeed(maxSpeedValues.Evaluate(sValueOnCurve), 0.5f, 2f);
+
+                // Sets Animator speed with input.
+                if (sValueOnCurve > 0.05f || velocity.z > minRunningSpeed)
+                {
+                    SetAnimatorSpeed(true, initialSpeedValuesCurve.Evaluate(sValueOnCurve), maxSpeedValues.Evaluate(sValueOnCurve) / maxRunningSpeed, dividerPerValuesCurve.Evaluate(sValueOnCurve));
+                }
+                else
+                {
+                    SetAnimatorSpeed(false,1f, 0, 1f);
+                }
             }
             else
             {
-                SetAnimatorSpeed(1f, 0, 1);
+                // Sleep Rigidbody when no sValue from input.
+                rigidbodyAthlete.Sleep();
+                
+                // Slowdown the Animator speed when no sValue from input.
+                SetAnimatorSpeed(false,1f, 0, 1f);
             }
         }
         
-        private void SetAnimatorBoolStatus(bool isRun)
+        private void SetAnimatorSpeed(bool isRun, float initialSpeed, float addingValue, float dividerPer)
         {
             animatorAthlete.SetBool(Run, isRun);
-        }
-        
-        private void SetAnimatorSpeed(float initialSpeed, float sValue, float dividerPer)
-        {
-            animatorAthlete.speed = initialSpeed +  sValue / dividerPer;
+            animatorAthlete.speed = initialSpeed +  addingValue / dividerPer;
             animatorAthlete.SetFloat(Speed, rigidbodyAthlete.velocity.magnitude);
         }
 
-        private void SetRigidbodySpeed(float maxSpeed)
+        private void SetRigidbodySpeed(float maxSpeed, float accelerationConstant, float decelerationConstant)
         {
-            rigidbodyAthlete.AddForce(rigidbodyAthlete.velocity.z < maxSpeed ? Vector3.forward * 0.5f : Vector3.back * 2f, ForceMode.Acceleration);
+            rigidbodyAthlete.AddForce(rigidbodyAthlete.velocity.z < maxSpeed ? Vector3.forward * accelerationConstant : Vector3.back * decelerationConstant, ForceMode.Acceleration);
         }
     }
 }
