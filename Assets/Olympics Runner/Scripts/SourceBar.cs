@@ -39,9 +39,7 @@ namespace MertUsta.OlympicsRunner
         private void HandleInput()
         {
             if (Input.GetKeyDown(KeyCode.Space))
-            {
                 UseSource(currentSource < tempoStepValue ? increasingTempoValue : decreasingTempoValue);
-            }
         }
 
         private void UseSource(float amount)

@@ -1,4 +1,3 @@
-using System;
 using UnityEngine;
 using UnityEngine.UI;
 using TMPro;
@@ -26,7 +25,13 @@ namespace MertUsta.OlympicsRunner
 
         private static readonly int Run = Animator.StringToHash("run");
         private static readonly int Speed = Animator.StringToHash("speed");
-
+        private Vector3 _cameraDefaultPos;
+        
+        private void Awake()
+        {
+            if (Camera.main != null) _cameraDefaultPos = Camera.main.transform.localPosition;
+        }
+        
         private void Update()
         {
             RunnerLogic(sourceBar.value);
@@ -36,7 +41,7 @@ namespace MertUsta.OlympicsRunner
         {
             var velocity = rigidbodyAthlete.velocity;
             var sValueOnCurve = sValue / 100f;
-            
+            HeadCamera(velocity.z);
             // Shows the speed value in UI.
             speedText.text = velocity.magnitude.ToString("F1") + "km/h";
 
@@ -47,13 +52,9 @@ namespace MertUsta.OlympicsRunner
 
                 // Sets Animator speed with input.
                 if (sValueOnCurve > 0.05f || velocity.z > minRunningSpeed)
-                {
-                    SetAnimatorSpeed(true, initialSpeedValuesCurve.Evaluate(sValueOnCurve), maxSpeedValues.Evaluate(sValueOnCurve) / maxRunningSpeed, dividerPerValuesCurve.Evaluate(sValueOnCurve));
-                }
+                    SetAnimatorSpeed(initialSpeedValuesCurve.Evaluate(sValueOnCurve), maxSpeedValues.Evaluate(sValueOnCurve) / maxRunningSpeed, dividerPerValuesCurve.Evaluate(sValueOnCurve));
                 else
-                {
-                    SetAnimatorSpeed(false,1f, 0, 1f);
-                }
+                    SetAnimatorSpeed(1f, 0, 1f);
             }
             else
             {
@@ -61,13 +62,22 @@ namespace MertUsta.OlympicsRunner
                 rigidbodyAthlete.Sleep();
                 
                 // Slowdown the Animator speed when no sValue from input.
-                SetAnimatorSpeed(false,1f, 0, 1f);
+                SetAnimatorSpeed(1f, 0, 1f);
             }
         }
-        
-        private void SetAnimatorSpeed(bool isRun, float initialSpeed, float addingValue, float dividerPer)
+
+        private void HeadCamera(float speed)
         {
-            animatorAthlete.SetBool(Run, isRun);
+            var posY = Mathf.Sin(Time.fixedTime * 3) * speed / 200;
+            var posX = Mathf.Cos(Time.fixedTime * 3) * speed / 800;
+
+            var pos = new Vector3(posX, posY,0);
+            if (Camera.main != null)
+                Camera.main.transform.localPosition = _cameraDefaultPos + pos;
+        }
+
+        private void SetAnimatorSpeed(float initialSpeed, float addingValue, float dividerPer)
+        {
             animatorAthlete.speed = initialSpeed +  addingValue / dividerPer;
             animatorAthlete.SetFloat(Speed, rigidbodyAthlete.velocity.magnitude);
         }
