@@ -2,7 +2,6 @@ Shader "Unlit/WireframeShader"
 {
     Properties
     {
-        _MainTex("Texture", 2D) = "white" {}
         _WireframeFrontColour("Wireframe front colour", color) = (1.0, 1.0, 1.0, 1.0)
         _WireframeBackColour("Wireframe back colour", color) = (0.5, 0.5, 0.5, 1.0)
         _WireframeWidth("Wireframe width threshold", float) = 0.05
