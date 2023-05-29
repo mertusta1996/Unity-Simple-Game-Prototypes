@@ -1,13 +1,25 @@
 ﻿using System.Collections.Generic;
+using TMPro;
 using UnityEngine;
 
 namespace MertUsta.DroneMechanics
 {
     public class DroneCore : MonoBehaviour
     {
+        [Header("Drone")] 
         public Rigidbody droneRigidbody;
+        public Camera droneCamera;
+
+        [Header("Propellers")] 
         public List<Transform> propellerList = new List<Transform>();
         
+        [Header("UI")] 
+        public TextMeshProUGUI speedText;
+        public TextMeshProUGUI altitudeText;
+        
+        [Header("Drone Effects")] 
+        public ParticleSystem speedEffect;
+
         // pitch, yaw, roll
         private Vector3 _attitude;
         private Vector3 _orientation;
@@ -16,6 +28,7 @@ namespace MertUsta.DroneMechanics
         private void Update()
         {
             ApplyUserInputs();
+            SetCameraPositionAndRotation();
         }
         
         private void FixedUpdate()
@@ -29,13 +42,43 @@ namespace MertUsta.DroneMechanics
             _attitude.x = CalculateValueByUserInput(_attitude.x, 36.75f,1.25f, 0.2f,KeyCode.W,KeyCode.S);
             
             // yaw
-            _attitude.y = CalculateValueByUserInput(_attitude.y, 4f,0.8f, 0.2f,KeyCode.RightArrow,KeyCode.LeftArrow);
+            _attitude.y = CalculateValueByUserInput(_attitude.y, 2f,0.8f, 0.2f,KeyCode.RightArrow,KeyCode.LeftArrow);
             
             // roll
             _attitude.z = CalculateValueByUserInput(_attitude.z, 36.75f,1.25f, 0.2f,KeyCode.D,KeyCode.A);
             
             // thrustForce
             _thrustForce = CalculateValueByUserInput(_thrustForce, 5f,1f, 0.2f,KeyCode.UpArrow,KeyCode.DownArrow);
+
+            SetSpeedUI();
+            SetAltitudeUI();
+            SetSpeedEffect(droneRigidbody.velocity.magnitude);
+        }
+        
+        private void SetSpeedUI()
+        {
+            speedText.text = "Speed : " + droneRigidbody.velocity.magnitude.ToString("F1") + "km/h";
+        }
+        
+        private void SetAltitudeUI()
+        {
+            var altitudeValueByM = droneRigidbody.transform.position.y - 0.2f;
+            if (altitudeValueByM < 1000f)
+            {
+                altitudeText.text = "Altitude : " + altitudeValueByM.ToString("F1") + "m";
+            }
+            else
+            {
+                var altitudeValueByKm = altitudeValueByM / 1000f;
+                altitudeText.text = "Altitude : " + altitudeValueByKm.ToString("F3") + "km";
+            }
+        }
+        
+        //TODO: Create "SpeedEffect.cs" and use same methods for Runner and Drone.
+        private void SetSpeedEffect(float velocityMagnitude)
+        {
+            var sh = speedEffect.shape;
+            sh.radius = 10f - ((velocityMagnitude / 15f) * 6f);
         }
 
         private float CalculateValueByUserInput(float actualValue, float limitValue, float diffPerFrameValue, float dragMultiplier, KeyCode upperKeyCode, KeyCode lowerKeyCode)
@@ -48,6 +91,14 @@ namespace MertUsta.DroneMechanics
             if (Input.GetKey(lowerKeyCode) && actualValue > -limitValue) actualValue -= diffPerFrameValue;
         
             return actualValue;
+        }
+        
+        
+        private void SetCameraPositionAndRotation()
+        {
+            var movingCameraVector = transform.position - transform.forward * 1.5f + Vector3.up * 0.36f;
+            droneCamera.transform.position = droneCamera.transform.position * 0.75f + movingCameraVector * 0.25f;
+            droneCamera.transform.LookAt(transform.position + transform.forward * 30.0f);
         }
 
         private void DroneLogic()
