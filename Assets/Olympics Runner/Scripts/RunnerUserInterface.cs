@@ -32,23 +32,18 @@ namespace MertUsta.OlympicsRunner
         {
             // UI changes when user input changes.
             if (sourceBar.value <= maxTempoColorLimit && sourceBar.value >= overForceColorLimit)
-            {
-                fillImage.color = overForceColor;
-                tempoText.text = "OverForced Tempo -";
-                tempoText.color = Color.red;
-            }
+                SetUserInterface(overForceColor, "OverForced Tempo -", Color.red);
             else if (sourceBar.value < overForceColorLimit && sourceBar.value >= successColorLimit)
-            {
-                fillImage.color = successColor;
-                tempoText.text = "Good Tempo +";
-                tempoText.color = Color.green;
-            }
+                SetUserInterface(successColor, "Good Tempo +", Color.green);
             else
-            {
-                fillImage.color = underForceColor;
-                tempoText.text = "Slow Tempo -";
-                tempoText.color = Color.yellow;
-            }
+                SetUserInterface(underForceColor, "Slow Tempo -", Color.yellow);
+        }
+
+        private void SetUserInterface(Color color, string tempo, Color tempoColor)
+        {
+            fillImage.color = color;
+            tempoText.text = tempo;
+            tempoText.color = tempoColor;
         }
     }
 }

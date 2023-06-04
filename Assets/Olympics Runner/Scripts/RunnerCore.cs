@@ -31,10 +31,12 @@ namespace MertUsta.OlympicsRunner
         private static readonly int Speed = Animator.StringToHash("speed");
         private Vector3 _cameraDefaultPos;
         private Vector3 _runnerDefaultPos;
-        private Camera _camera => Camera.main;
+        private bool _isMainCameraNotNull;
+        private Camera _mainCamera => Camera.main;
 
         private void Awake()
         {
+            _isMainCameraNotNull = _mainCamera != null;
             if (Camera.main != null) _cameraDefaultPos = Camera.main.transform.localPosition;
             if(rigidbodyAthlete != null) _runnerDefaultPos = rigidbodyAthlete.transform.position;
         }
@@ -96,14 +98,13 @@ namespace MertUsta.OlympicsRunner
         
         private void SetHeadBobbingValues(float velocityMagnitude)
         {
-            var posX = Mathf.Sin(Time.fixedTime * 3) * velocityMagnitude / 750;
-            var posY = Mathf.Sin(Time.fixedTime * 4) * velocityMagnitude / 300;
-            var posZ = Mathf.Cos(Time.fixedTime * 3) * velocityMagnitude / 360;
-
-            var pos = new Vector3(posX, posY,posZ);
+            var pos = new Vector3(
+                Mathf.Sin(Time.fixedTime * 3) * velocityMagnitude / 750,
+                Mathf.Sin(Time.fixedTime * 4) * velocityMagnitude / 300,
+                Mathf.Cos(Time.fixedTime * 3) * velocityMagnitude / 360);
             
-            if (_camera != null)
-                _camera.transform.localPosition = _cameraDefaultPos + pos;
+            if (_isMainCameraNotNull)
+                _mainCamera.transform.localPosition = _cameraDefaultPos + pos;
         }
 
         private void SetAnimatorSpeed(float initialSpeed, float addingValue, float dividerPer)
