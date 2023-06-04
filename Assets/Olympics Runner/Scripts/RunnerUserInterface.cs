@@ -4,7 +4,7 @@ using TMPro;
 
 namespace MertUsta.OlympicsRunner
 {
-    public class RunnerUserInput : MonoBehaviour
+    public class RunnerUserInterface : MonoBehaviour
     {
         [Header("UI")] public Slider sourceBar;
         public Image fillImage;

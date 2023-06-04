@@ -50,35 +50,18 @@ namespace MertUsta.DroneMechanics
             // thrustForce
             _thrustForce = CalculateValueByUserInput(_thrustForce, 5f,1f, 0.2f,KeyCode.UpArrow,KeyCode.DownArrow);
 
+            // Set UI values.
             SetSpeedUI();
-            SetAltitudeUI();
-            SetSpeedEffect(droneRigidbody.velocity.magnitude);
+            altitudeText.text = "Altitude : " + DistanceConversion.Distance(droneRigidbody.transform.position.y - 0.2f);
+
+            // Set the warp-drive speed effect's radius via drone's velocity magnitude.
+            var speedEffectShape = speedEffect.shape;
+            speedEffectShape.radius = SpeedEffect.CalculateSpeedEffectValue(droneRigidbody.velocity.magnitude, 15f, 4f, 10f);
         }
         
         private void SetSpeedUI()
         {
             speedText.text = "Speed : " + droneRigidbody.velocity.magnitude.ToString("F1") + "km/h";
-        }
-        
-        private void SetAltitudeUI()
-        {
-            var altitudeValueByM = droneRigidbody.transform.position.y - 0.2f;
-            if (altitudeValueByM < 1000f)
-            {
-                altitudeText.text = "Altitude : " + altitudeValueByM.ToString("F1") + "m";
-            }
-            else
-            {
-                var altitudeValueByKm = altitudeValueByM / 1000f;
-                altitudeText.text = "Altitude : " + altitudeValueByKm.ToString("F3") + "km";
-            }
-        }
-        
-        //TODO: Create "SpeedEffect.cs" and use same methods for Runner and Drone.
-        private void SetSpeedEffect(float velocityMagnitude)
-        {
-            var sh = speedEffect.shape;
-            sh.radius = 10f - ((velocityMagnitude / 15f) * 6f);
         }
 
         private float CalculateValueByUserInput(float actualValue, float limitValue, float diffPerFrameValue, float dragMultiplier, KeyCode upperKeyCode, KeyCode lowerKeyCode)
@@ -93,12 +76,14 @@ namespace MertUsta.DroneMechanics
             return actualValue;
         }
         
-        
         private void SetCameraPositionAndRotation()
         {
-            var movingCameraVector = transform.position - transform.forward * 1.5f + Vector3.up * 0.36f;
-            droneCamera.transform.position = droneCamera.transform.position * 0.75f + movingCameraVector * 0.25f;
-            droneCamera.transform.LookAt(transform.position + transform.forward * 30.0f);
+            var dronePos = droneRigidbody.transform;
+            var movingCameraVector = dronePos.position - dronePos.forward * 1.5f + Vector3.up * 0.36f;
+
+            var droneCamPos = droneCamera.transform;
+            droneCamPos.position = droneCamPos.position * 0.75f + movingCameraVector * 0.25f;
+            droneCamPos.LookAt(dronePos.position + dronePos.forward * 30.0f);
         }
 
         private void DroneLogic()
@@ -110,7 +95,7 @@ namespace MertUsta.DroneMechanics
                 propeller.Rotate(Vector3.up, propellerTurnSpeed * 22.5f);
                 
                 // apply thrust force to rigidbody
-                droneRigidbody.AddForce(transform.up * (droneRigidbody.mass * 9.81f + _thrustForce) / 5f, ForceMode.Force);
+                droneRigidbody.AddForce(droneRigidbody.transform.up * (droneRigidbody.mass * 9.81f + _thrustForce) / 5f, ForceMode.Force);
             }
             
             // yaw

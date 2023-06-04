@@ -31,7 +31,8 @@ namespace MertUsta.OlympicsRunner
         private static readonly int Speed = Animator.StringToHash("speed");
         private Vector3 _cameraDefaultPos;
         private Vector3 _runnerDefaultPos;
-        
+        private Camera _camera => Camera.main;
+
         private void Awake()
         {
             if (Camera.main != null) _cameraDefaultPos = Camera.main.transform.localPosition;
@@ -50,14 +51,15 @@ namespace MertUsta.OlympicsRunner
             // Set the head bobbing values in main camera with velocity magnitude.
             SetHeadBobbingValues(velocityMagnitude);
 
-            // Set the warp-drive speed effect's radius via velocity magnitude.
-            SetSpeedEffect(velocityMagnitude);
+            // Set the warp-drive speed effect's radius via runner's velocity magnitude.
+            var speedEffectShape = speedEffect.shape;
+            speedEffectShape.radius = SpeedEffect.CalculateSpeedEffectValue(velocityMagnitude, maxRunningSpeed, 4f, 10f);
             
             // Shows the speed value in UI.
             SetSpeedUI(velocityMagnitude);
             
             // Shows the speed value in UI.
-            SetDistanceUI();
+            distanceText.text = "Total Distance : " + DistanceConversion.Distance((rigidbodyAthlete.transform.position - _runnerDefaultPos).magnitude);
 
             // Calculates and sets animator speed and rigidbody speed.
             RunnerCalculation(sValue, velocityMagnitude);
@@ -87,29 +89,9 @@ namespace MertUsta.OlympicsRunner
             }
         }
         
-        private void SetDistanceUI()
-        {
-            var distanceValueByM = (rigidbodyAthlete.transform.position - _runnerDefaultPos).magnitude;
-            if (distanceValueByM < 1000f)
-            {
-                distanceText.text = "Total Distance : " + distanceValueByM.ToString("F1") + "m";
-            }
-            else
-            {
-                var distanceValueByKm = distanceValueByM / 1000f;
-                distanceText.text = "Total Distance : " +distanceValueByKm.ToString("F3") + "km";
-            }
-        }
-        
         private void SetSpeedUI(float velocityMagnitude)
         {
             speedText.text = "Speed : " + velocityMagnitude.ToString("F1") + "km/h";
-        }
-
-        private void SetSpeedEffect(float velocityMagnitude)
-        {
-            var sh = speedEffect.shape;
-            sh.radius = 10f - ((velocityMagnitude / maxRunningSpeed) * 6f);
         }
         
         private void SetHeadBobbingValues(float velocityMagnitude)
@@ -119,8 +101,9 @@ namespace MertUsta.OlympicsRunner
             var posZ = Mathf.Cos(Time.fixedTime * 3) * velocityMagnitude / 360;
 
             var pos = new Vector3(posX, posY,posZ);
-            if (Camera.main != null)
-                Camera.main.transform.localPosition = _cameraDefaultPos + pos;
+            
+            if (_camera != null)
+                _camera.transform.localPosition = _cameraDefaultPos + pos;
         }
 
         private void SetAnimatorSpeed(float initialSpeed, float addingValue, float dividerPer)
